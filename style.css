@@ -1,0 +1,44 @@
+.in{
+    text-align: center;
+    background-color: white;
+    border: solid;
+    padding: 10px;
+    border-width: 0px 0px 1px 0px;
+    padding: 10px;
+}
+.lisb{
+    margin: 10px;
+    font-weight:bolder;
+}
+#sear{
+    margin:80px;
+    margin-bottom: 70px;
+    padding: 10px 20px 10px 20px;
+    border-radius: 50px;
+    border-color: rgb(19, 114, 255);
+    border-width: 3px;
+    background-color: whitesmoke;
+}
+.lisbb{
+    border: solid;
+    padding: 10px;
+    border-width: 1px 0px 1px 0px;
+    background-color: white;
+}
+body{
+    background-color: whitesmoke;
+    margin: 0;
+}
+.adtable{
+    text-align:center;
+}
+#lis{
+
+}
+.sub{
+    text-align:left;
+    border-bottom: solid;
+    margin: 10px;
+    padding: 10px;
+    border-width: 1px;
+}
