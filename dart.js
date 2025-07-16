@@ -1,4 +1,4 @@
-let menusiu = ["대패비빔면", "3500", "", "에이드", "2000", "청포도$$자몽$$레몬", "대패불닭", "3500", "", "컵화채", "3000", ""];
+let menusiu = ["비빔면", "3000", "", "에이드", "2000", "청포도$$자몽$$레몬", "컵화채", "3000", ""];
 let copt = "";
 let cart = [];
 let amnt = 1;
@@ -127,7 +127,7 @@ function finor() {
 
       console.log("주문 내용: " + forder + "\n가격: ₩" + totalPrice);
       sendOrder(forder, totalPrice);
-      alert("주문이 완료되었습니다.")
+      alert("계좌이체를 하셔야 주문이 들어갑니다. 이점 유의하세요")
       location.reload();
     }
   }
