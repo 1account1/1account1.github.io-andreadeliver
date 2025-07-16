@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="ko">
+
+<head>
+    
+    <meta charset="UTF-8" />
+        <title>RSA + AES Hybrid 암호화/복호화</title>
+</head>
+
+<body>
+        <h2>댓글 암호화/복호화 (클라이언트 전용 테스트)</h2>
+        <textarea id="input" rows="4" cols="50">이것은 테스트 댓글입니다</textarea><br />
+        <button id="run">Encrypt</button>
+        <button id="decrypt">Decrypt</button>
+
+        <h3>암호화 결과</h3>
+    
+    <pre id="result"></pre>
+
+        <h3>복호화 결과</h3>
+    
+    <pre id="decryptedResult"></pre>
+
+    
+    <script>
+        const PUBLIC_PEM = `-----BEGIN PUBLIC KEY-----
+MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAn1XzF3y5S5tQ5vfZTuYK
+P7/anUiC1JAdxNFVkmOPUF3UsKuFMCQmdZk4VbFxuMXG1e2l8t4EoJXnxLLdYlyX
+hT4dQX6XZBBsoYt9wP2AGqdkfIlizokZoLyyvgZdvsj0dgON8XtaP9lASJCV3WxE
+zAPoAT5pYVu4PbRHlODGdPz/LDXcdrn2whzzk0ZzyFAQXQUa5U6B7VeTn+C66nhr
+UB3N5xnR2kQX7jrUV1hyV/JB0p6cT/HBJpVDu33Vp3fLUxCNuoIq0WC3aCR0oV1A
+EgGwOppoGBq1AYaCowiUviUSNDBE0x2zfVwvGVWJojx/NvBxdBJ+qMVvpvRwej68
+3wIDAQAB
+-----END PUBLIC KEY-----`;
+
+        // 테스트용 개인키: 실제 서비스에는 노출 금지
+        const PRIVATE_PEM = `-----BEGIN PRIVATE KEY-----
+...YOUR PRIVATE KEY HERE...
+-----END PRIVATE KEY-----`;
+
+        function base64ToArrayBuffer(base64) {
+            const binary = atob(base64);
+            const bytes = new Uint8Array(binary.length);
+            for (let i = 0; i < binary.length; i++) {
+                bytes[i] = binary.charCodeAt(i);
+            }
+            return bytes.buffer;
+        }
+
+        function arrayBufferToBase64(buffer) {
+            return btoa(String.fromCharCode(...new Uint8Array(buffer)));
+        }
+
+        async function importRsaPublicKey(pem) {
+            const b64 = pem.replace(/-----BEGIN PUBLIC KEY-----/, '')
+                .replace(/-----END PUBLIC KEY-----/, '')
+                .replace(/\s/g, '');
+            const bin = base64ToArrayBuffer(b64);
+            return crypto.subtle.importKey(
+                'spki', bin,
+                { name: 'RSA-OAEP', hash: 'SHA-256' },
+                true, ['encrypt']
+            );
+        }
+
+        async function importRsaPrivateKey(pem) {
+            const b64 = pem.replace(/-----BEGIN PRIVATE KEY-----/, '')
+                .replace(/-----END PRIVATE KEY-----/, '')
+                .replace(/\s/g, '');
+            const bin = base64ToArrayBuffer(b64);
+            return crypto.subtle.importKey(
+                'pkcs8', bin,
+                { name: 'RSA-OAEP', hash: 'SHA-256' },
+                true, ['decrypt']
+            );
+        }
+
+        async function encryptComment(plainText, rsaPubKey) {
+            const encoder = new TextEncoder();
+            const data = encoder.encode(plainText);
+
+            const aesKey = await crypto.subtle.generateKey(
+                { name: 'AES-GCM', length: 256 },
+                true, ['encrypt', 'decrypt']
+            );
+            const iv = crypto.getRandomValues(new Uint8Array(12));
+
+            const encryptedData = await crypto.subtle.encrypt({ name: 'AES-GCM', iv }, aesKey, data);
+            const rawKey = await crypto.subtle.exportKey('raw', aesKey);
+            const encryptedKey = await crypto.subtle.encrypt({ name: 'RSA-OAEP' }, rsaPubKey, rawKey);
+
+            return {
+                encryptedComment: arrayBufferToBase64(encryptedData),
+                encryptedAesKey: arrayBufferToBase64(encryptedKey),
+                iv: arrayBufferToBase64(iv)
+            };
+        }
+
+        async function decryptComment(enc, rsaPrivKey) {
+            const encryptedKeyBuf = base64ToArrayBuffer(enc.encryptedAesKey);
+            const rawKey = await crypto.subtle.decrypt({ name: 'RSA-OAEP' }, rsaPrivKey, encryptedKeyBuf);
+            const aesKey = await crypto.subtle.importKey('raw', rawKey, { name: 'AES-GCM' }, true, ['decrypt']);
+
+            const iv = base64ToArrayBuffer(enc.iv);
+            const cipherBuf = base64ToArrayBuffer(enc.encryptedComment);
+            const decrypted = await crypto.subtle.decrypt({ name: 'AES-GCM', iv }, aesKey, cipherBuf);
+            return new TextDecoder().decode(decrypted);
+        }
+
+        document.getElementById('run').addEventListener('click', async () => {
+            const text = document.getElementById('input').value;
+            const pubKey = await importRsaPublicKey(PUBLIC_PEM);
+            const res = await encryptComment(text, pubKey);
+            document.getElementById('result').textContent = JSON.stringify(res, null, 2);
+        });
+
+        document.getElementById('decrypt').addEventListener('click', async () => {
+            const data = JSON.parse(document.getElementById('result').textContent);
+            const privKey = await importRsaPrivateKey(PRIVATE_PEM);
+            const plaintext = await decryptComment(data, privKey);
+            document.getElementById('decryptedResult').textContent = plaintext;
+        });
+    </script>
+</body>
+
+</html>

@@ -1,0 +1,61 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8">
+  <link rel="stylesheet"
+        href="https://pyscript.net/releases/2025.7.2/core.css">
+  <script type="module"
+          src="https://pyscript.net/releases/2025.7.2/core.js"></script>
+</head>
+<body>
+  <h2>XOR 암호화, 복호화 데모 (PyScript)</h2>
+
+  이름:  <input id="in_name"><br>
+  아이디: <input id="in_phone"><br>
+  <button py-click="encrypt_do">암호화 실행</button>
+  <button py-click="decrypt_do">복호화 실행</button>
+
+  <h3>결과</h3>
+  <p>암호화된 이름 : <span id="out_name"></span></p>
+  <p>암호화된 아이디: <span id="out_phone"></span></p>
+  <p>복호화된 이름 : <span id="dec_name"></span></p>
+  <p>복호화된 아이디: <span id="dec_phone"></span></p>
+
+  <py-script>
+from itertools import cycle
+from pyscript import document   # DOM 접근용 객체 :contentReference[oaicite:1]{index=1}
+
+class XorCipher:
+    def __init__(self, key: bytes):
+        self.key = key
+    def _ks(self, n):                          # 가변 길이 키스트림
+        return [k for k, _ in zip(cycle(self.key), range(n))]
+    def encrypt(self, text: str) -> str:       # str â†’ HEX
+        data = text.encode('utf-8')
+        ks   = self._ks(len(data))
+        return bytes([b ^ k for b, k in zip(data, ks)]).hex()
+    def decrypt(self, hexstr: str) -> str:     # HEX â†’ str
+        data = bytes.fromhex(hexstr)
+        ks   = self._ks(len(data))
+        return bytes([b ^ k for b, k in zip(data, ks)]).decode('utf-8')
+
+cipher = XorCipher(b"mysecretkey")             # 데모용 고정 키
+
+def encrypt_do(event=None):
+    # 1 입력
+    name  = document.getElementById("in_name").value
+    phone = document.getElementById("in_phone").value
+    # 2 암호화
+    enc_name  = cipher.encrypt(name)
+    enc_phone = cipher.encrypt(phone)
+    # 3 복호화
+    dec_name  = cipher.decrypt(enc_name)
+    dec_phone = cipher.decrypt(enc_phone)
+    # 4 결과 출력
+    document.getElementById("out_name").innerText = enc_name
+    document.getElementById("out_phone").innerText = enc_phone
+    document.getElementById("dec_name").innerText = dec_name
+    document.getElementById("dec_phone").innerText = dec_phone
+  </py-script>
+</body>
+</html>

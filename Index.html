@@ -5,12 +5,36 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>배달의대건: 대건제 배달앱</title>
     <link rel="stylesheet" href="style.css">
+    <script src="dart.js"></script>
+    <script src="https://accounts.google.com/gsi/client" async defer></script>
 </head>
-<body>
+<body></body>
     <div class="in">
-        <h2>배달의대건</h2>
-        <div><input id='sear' placeholder="검색어를 입력하세요"></input></div>
-        <span class="lisbb"><span class="lisb">음식배달</span><span class="lisb">음식포장</span><span class="lisb">매장찾기</span></span>
+        <h2 id="gage">다패삼겹: 메뉴</h2>
+    </div>
+    <div id="daorl">
+    </div>
+    <div id="opencart" onclick="opencrt();">장바구니 열기</div>
+    <div id="opt" style="display: none;">
+        <h3 id="optt">테스트</h3>
+        <div id="prc">₩3000</div>
+        <br>
+        <div id="opti">테스트&nbsp;-&nbsp;✅<br>테스트&nbsp;-&nbsp;🟩</div>
+        <br>
+        <div><span onclick="amntd();">- </span><input id="amntinp" type="text" value="1" size="1" readonly><span onclick="amntu();"> +</span></div>
+        <br>
+        <div><span id="cancel" onclick="copt = '';document.getElementById('opt').style.display = 'none';">취소</span>&nbsp<span id="addup" onclick="addup();">추가하기</span></div>
+    </div>
+    <div id="crt" style="display: none;">
+        <h3 style="position: fixed;top:0;right:10%;" onclick="document.getElementById('crt').style.display='none';">취소</h3>
+        <h2>장바구니</h2>
+        <h3 id="costo">₩7,220</h3>
+        <div id="cartlist"></div>
+        <div>현금결제(후불) <input onclick="cashie();" type="checkbox" name="" id="cash"> &nbsp; 계좌이체(선불) <input onclick="acnt();" type="checkbox" name="" id="account"><div>
+        <div id="paytip">결제방식을 선택해 주세요</div>
+        <div><input type="text" id="adres" placeholder="배송위치를 자세히 입력해주세요"></div>
+        <div><input type="text" id="reci" placeholder="받으시는분 성함"></div>
+        <div id="ordercart" onclick="finor();">결제완료</div>
     </div>
 </body>
 </html>
