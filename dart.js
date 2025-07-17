@@ -15,6 +15,7 @@ document.addEventListener('DOMContentLoaded', function(){
             '<div class="menn" onclick="pop(' + i + ')">' +
             '<span><h3>' + menusiu[i] + '</h3><div>₩' + menusiu[i+1] + '</div></span></div>';
     }
+    document.getElementById('daorl').innerHTML += "<br><br><br><br><br>";
 });
 
 function selop(p){
